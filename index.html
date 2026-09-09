@@ -1,4 +1,19 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<!-- sem esta linha o navegador assume 980px e encolhe o app inteiro -->
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- "Adicionar à Tela de Início" abre sem a barra do navegador -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="RGR">
+<meta name="application-name" content="RGR">
+<meta name="theme-color" id="themeColor" content="#F7F6F4">
+<meta name="description" content="Registro de treinos: cronômetro de série e descanso, pontuação de peso por repetições, streak e evolução.">
 <title>Roger's Gym Record</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230D0C0B'/%3E%3Ctext x='32' y='44' font-family='Arial Narrow,Arial,sans-serif' font-size='30' font-weight='700' text-anchor='middle' fill='%23FFFFFF'%3ERG%3Ctspan fill='%23FF4A17'%3ER%3C/tspan%3E%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap">
 <style>
 /* ============================================================
@@ -67,8 +82,12 @@
 }
 
 *{box-sizing:border-box}
+html{height:100%}
 body{
   margin:0;
+  height:100%;
+  overflow:hidden;              /* o documento não rola: quem rola é cada tela */
+  overscroll-behavior:none;     /* mata o efeito elástico do celular */
   background:var(--bg);
   color:var(--ink);
   font-family:var(--sans);
@@ -84,7 +103,8 @@ h1,h2,h3{margin:0;text-wrap:balance}
 
 /* ---------- shell ---------- */
 .shell{
-  max-width:480px;margin:0 auto;min-height:100vh;min-height:100dvh;
+  max-width:480px;margin:0 auto;
+  height:100%;height:100dvh;overflow:hidden;
   background:var(--bg);position:relative;
   display:flex;flex-direction:column;
 }
@@ -92,7 +112,14 @@ h1,h2,h3{margin:0;text-wrap:balance}
   body{background:var(--surface-2)}
   .shell{border-left:1px solid var(--line);border-right:1px solid var(--line);}
 }
-.screen{display:none;flex-direction:column;flex:1}
+.screen{display:none;flex-direction:column;flex:1;min-height:0}
+/* a área central de cada tela é a única que rola */
+.screen > .pad,
+.screen > .live-body,
+.screen > .login{
+  flex:1;min-height:0;overflow-y:auto;
+  -webkit-overflow-scrolling:touch;overscroll-behavior:contain;
+}
 .screen.is-active{display:flex;animation:enter .26s cubic-bezier(.22,.8,.3,1)}
 @keyframes enter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){
@@ -102,9 +129,10 @@ h1,h2,h3{margin:0;text-wrap:balance}
 
 /* ---------- topbar ---------- */
 .topbar{
-  display:flex;align-items:center;gap:12px;
-  padding:14px 18px;border-bottom:1px solid var(--line);
-  background:var(--surface);position:sticky;top:0;z-index:20;
+  display:flex;align-items:center;gap:12px;flex:none;
+  padding:14px 18px;padding-top:calc(14px + env(safe-area-inset-top));
+  border-bottom:1px solid var(--line);
+  background:var(--surface);z-index:20;
 }
 .mark{font-family:var(--cond);font-weight:700;font-size:27px;letter-spacing:.02em;line-height:1;display:flex;align-items:baseline;gap:1px}
 .mark i{font-style:normal;color:var(--accent)}
@@ -161,7 +189,7 @@ h1,h2,h3{margin:0;text-wrap:balance}
 .iconbtn:active{background:var(--surface-2)}
 
 /* ---------- login ---------- */
-.login{flex:1;display:flex;flex-direction:column;justify-content:center;padding:32px 26px 40px;gap:26px}
+.login{display:flex;flex-direction:column;justify-content:center;padding:32px 26px 40px;padding-top:calc(32px + env(safe-area-inset-top));gap:26px}
 .login-mark{font-family:var(--cond);font-weight:700;font-size:72px;line-height:.86;letter-spacing:-.01em}
 .login-mark i{font-style:normal;color:var(--accent)}
 .login-tag{font-size:14px;color:var(--ink-2);max-width:30ch}
@@ -283,10 +311,10 @@ h1,h2,h3{margin:0;text-wrap:balance}
 .gbtn[aria-pressed="true"] .dot svg{opacity:1}
 
 /* ---------- live ---------- */
-.live-head{padding:14px 18px;border-bottom:1px solid var(--line);background:var(--surface);display:flex;align-items:center;gap:12px}
+.live-head{padding:14px 18px;padding-top:calc(14px + env(safe-area-inset-top));flex:none;border-bottom:1px solid var(--line);background:var(--surface);display:flex;align-items:center;gap:12px}
 .live-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 1.8s ease-in-out infinite;flex:none}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
-.live-body{flex:1;padding:18px;padding-bottom:132px;display:flex;flex-direction:column;gap:14px}
+.live-body{padding:18px;display:flex;flex-direction:column;gap:14px}
 
 .timer{
   background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
@@ -318,7 +346,7 @@ h1,h2,h3{margin:0;text-wrap:balance}
 
 /* sticky live actions */
 .livebar{
-  position:sticky;bottom:0;background:var(--surface);border-top:1px solid var(--line);
+  flex:none;background:var(--surface);border-top:1px solid var(--line);
   padding:12px 18px calc(12px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:10px;z-index:15;
 }
 .slider{
@@ -422,8 +450,8 @@ h1,h2,h3{margin:0;text-wrap:balance}
 .exc-body{display:none;padding:0 13px 13px;flex-direction:column;gap:7px}
 .exc.is-open .exc-body{display:flex}
 
-.savebar{padding:16px 18px calc(20px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--line);background:var(--surface)}
-.savebar--stick{position:sticky;bottom:0;z-index:16;padding-top:12px;padding-bottom:calc(14px + env(safe-area-inset-bottom))}
+.savebar{flex:none;padding:16px 18px calc(20px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--line);background:var(--surface)}
+.savebar--stick{z-index:16;padding-top:12px;padding-bottom:calc(14px + env(safe-area-inset-bottom))}
 
 /* misc */
 .linkbtn{background:none;color:var(--ink-3);font-size:12.5px;font-weight:600;text-decoration:underline;text-underline-offset:3px;padding:8px}
@@ -434,6 +462,8 @@ input[type=number]{-moz-appearance:textfield}
 input[type=number]::-webkit-outer-spin-button,
 input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 </style>
+</head>
+<body>
 
 <div class="shell">
 
@@ -683,6 +713,8 @@ function paintSwitch(){
   const d=currentDark();
   const sw=$("#themeSw"); sw.setAttribute("aria-checked",d?"true":"false");
   $("#themeIcon").innerHTML=d?MOON:SUN;
+  /* a barra do navegador / status bar acompanha o tema do app */
+  const tc=$("#themeColor"); if(tc) tc.setAttribute("content",d?"#0D0C0B":"#F7F6F4");
 }
 function initTheme(){
   let stored=null;
@@ -1526,9 +1558,29 @@ $("#metricInfo").addEventListener("click",()=>{
     root=>$("[data-x]",root).addEventListener("click",closeSheet));
 });
 
+/* ══════════════ ícone da tela de início (iOS exige PNG) ══════════════ */
+function makeTouchIcon(){
+  try{
+    const c=document.createElement("canvas"); c.width=c.height=180;
+    const x=c.getContext("2d"); if(!x) return;
+    x.fillStyle="#0D0C0B"; x.fillRect(0,0,180,180);
+    x.textAlign="center"; x.textBaseline="middle";
+    x.font="700 62px 'Barlow Condensed','Arial Narrow',Arial,sans-serif";
+    const rg=x.measureText("RG").width, r=x.measureText("R").width, tot=rg+r;
+    x.fillStyle="#FFFFFF"; x.fillText("RG",90-tot/2+rg/2,96);
+    x.fillStyle="#FF4A17";  x.fillText("R", 90+tot/2-r/2, 96);
+    const l=document.createElement("link");
+    l.rel="apple-touch-icon"; l.href=c.toDataURL("image/png");
+    document.head.appendChild(l);
+  }catch(e){}
+}
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(makeTouchIcon); else makeTouchIcon();
+
 /* ══════════════ boot ══════════════ */
 load(); initTheme(); renderNicks();
 if(DB.last && DB.users[DB.last]){ $("#nickInput").value=DB.users[DB.last].nick; }
 window.addEventListener("beforeunload",e=>{ if(S.live||S.draft){ e.preventDefault(); e.returnValue=""; } });
 })();
 </script>
+</body>
+</html>
